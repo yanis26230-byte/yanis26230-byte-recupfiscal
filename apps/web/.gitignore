@@ -1,0 +1,5 @@
+.next
+.data
+next-env.d.ts.bak
+test-results
+playwright-report

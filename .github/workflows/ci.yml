@@ -1,0 +1,35 @@
+name: Intégration continue
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Seed à jour avec le moteur
+        run: pnpm seed:generate && git diff --exit-code supabase/seed.sql
+      - run: pnpm typecheck
+      - name: Tests unitaires, moteur, base (RLS) et application
+        run: pnpm test
+      - name: Navigateur pour les tests de bout en bout
+        run: pnpm --filter @recupfiscal/web exec playwright install --with-deps chromium
+      - name: Tests de bout en bout (smartphone, tablette, ordinateur)
+        run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: rapports-playwright
+          path: apps/web/test-results

@@ -1,0 +1,18 @@
+{
+  "name": "recupfiscal",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "test:e2e": "pnpm --filter @recupfiscal/web build && pnpm --filter @recupfiscal/web test:e2e",
+    "dev": "pnpm --filter @recupfiscal/web dev",
+    "seed:generate": "pnpm --filter @recupfiscal/engine seed:generate"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

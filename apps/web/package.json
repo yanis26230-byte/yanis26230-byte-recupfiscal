@@ -1,0 +1,52 @@
+{
+  "name": "@recupfiscal/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit -p .",
+    "db:setup": "tsx scripts/db-setup.ts",
+    "worker": "tsx scripts/worker.ts",
+    "admin:grant": "tsx scripts/admin-grant.ts",
+    "purge": "tsx scripts/purge.ts"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.14",
+    "@hookform/resolvers": "^5.9.2",
+    "@react-pdf/renderer": "4.3.0",
+    "@recupfiscal/engine": "workspace:*",
+    "@supabase/ssr": "0.6.1",
+    "@supabase/supabase-js": "2.49.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.66.0",
+    "next": "15.5.28",
+    "pg": "^8.23.1",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "react-hook-form": "^7.91.0",
+    "read-excel-file": "5.8.0",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.7.0",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/postcss": "~4.1.18",
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "postcss": "^8.5.32",
+    "tailwindcss": "~4.1.18",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "unpdf": "1.0.6",
+    "vitest": "^3.2.7"
+  }
+}
