@@ -46,6 +46,9 @@ Sauvegardes : activer la restauration à un instant donné (PITR) de Supabase ; 
 | `BOOTSTRAP_ADMIN_EMAILS` | adresse(s) du premier administrateur, à retirer ensuite |
 | `IP_HASH_SALT` | valeur aléatoire secrète (hachage des IP pour la limitation de débit) |
 | `RETENTION_*` | durées de conservation validées par le DPO |
+| `DATABASE_SSL_CA` / `DATABASE_SSL_CA_FILE` | certificat racine de la base (Supabase), connexion TLS toujours vérifiée |
+
+Guide pas à pas pour Clever Cloud : [CLEVER-CLOUD.md](CLEVER-CLOUD.md).
 
 ## 5. Processus
 

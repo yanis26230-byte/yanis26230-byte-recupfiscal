@@ -7,12 +7,19 @@
     "typecheck": "pnpm -r typecheck",
     "test:e2e": "pnpm --filter @recupfiscal/web build && pnpm --filter @recupfiscal/web test:e2e",
     "dev": "pnpm --filter @recupfiscal/web dev",
-    "seed:generate": "pnpm --filter @recupfiscal/engine seed:generate"
+    "seed:generate": "pnpm --filter @recupfiscal/engine seed:generate",
+    "clever:build": "pnpm install --frozen-lockfile --prod=false && pnpm --filter @recupfiscal/web build",
+    "clever:start": "pnpm --filter @recupfiscal/web exec next start -p 8080 -H 0.0.0.0",
+    "clever:worker": "pnpm --filter @recupfiscal/web worker",
+    "clever:purge": "pnpm --filter @recupfiscal/web purge"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "vitest": "^3.2.7"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }

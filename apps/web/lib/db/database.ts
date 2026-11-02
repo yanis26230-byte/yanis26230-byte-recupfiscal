@@ -88,9 +88,31 @@ async function createPglite(dataDir: string | null): Promise<Database> {
   };
 }
 
+export interface PgSslOptions { ca?: string; caFile?: string; disable?: boolean }
+
+/**
+ * Configuration TLS de la connexion PostgreSQL : le certificat du serveur est TOUJOURS vérifié
+ * (hors base locale). Pour Supabase, fournir le certificat racine du projet (Database Settings >
+ * SSL Configuration) via DATABASE_SSL_CA (contenu PEM) ou DATABASE_SSL_CA_FILE (chemin).
+ * Les paramètres sslmode/sslrootcert de l'URL sont retirés : la configuration ci-dessous fait foi.
+ */
+export function buildPgConfig(url: string, opts: PgSslOptions = {}, readFile: (p: string) => string = (p) => readFileSync(p, 'utf8')) {
+  const u = new URL(url);
+  for (const k of ['sslmode', 'sslrootcert', 'sslcert', 'sslkey', 'ssl']) u.searchParams.delete(k);
+  const local = ['localhost', '127.0.0.1', '::1'].includes(u.hostname);
+  if (opts.disable && !local) throw new Error('TLS ne peut être désactivé que pour une base locale');
+  const ca = opts.ca?.replace(/\\n/g, '\n') ?? (opts.caFile ? readFile(opts.caFile) : undefined);
+  if (ca && !ca.includes('BEGIN CERTIFICATE')) throw new Error('DATABASE_SSL_CA ne contient pas de certificat PEM');
+  return {
+    connectionString: u.toString(),
+    max: Number(process.env.DATABASE_POOL_MAX ?? 10),
+    ssl: local || opts.disable ? false : ({ rejectUnauthorized: true, ...(ca ? { ca } : {}) } as const),
+  };
+}
+
 async function createPg(url: string): Promise<Database> {
   const { Pool } = await import('pg');
-  const pool = new Pool({ connectionString: url, max: 10, ssl: url.includes('localhost') ? undefined : { rejectUnauthorized: true } });
+  const pool = new Pool(buildPgConfig(url, { ca: process.env.DATABASE_SSL_CA, caFile: process.env.DATABASE_SSL_CA_FILE, disable: process.env.DATABASE_SSL === 'disable' }));
   const transaction: Database['transaction'] = async (fn) => {
       const client = await pool.connect();
       try {
