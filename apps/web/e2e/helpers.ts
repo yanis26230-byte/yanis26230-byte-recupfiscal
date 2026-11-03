@@ -6,8 +6,16 @@ export async function expectNoHorizontalScroll(page: Page) {
   expect(overflow, 'débordement horizontal en pixels').toBeLessThanOrEqual(1);
 }
 
+/** Attend que le questionnaire soit interactif (hydratation terminée) avant toute saisie. */
+export async function questionnaireReady(page: Page) {
+  await expect(page.getByTestId('questionnaire')).toHaveAttribute('data-ready', 'true', { timeout: 15_000 });
+}
+
+/** Attend que TOUTES les modifications soient confirmées par le serveur (pas seulement un ancien message). */
 export async function waitSaved(page: Page) {
-  await expect(page.getByTestId('save-state')).toHaveText('Réponses enregistrées', { timeout: 10_000 });
+  const state = page.getByTestId('save-state');
+  await expect(state).toHaveAttribute('data-dirty', 'false', { timeout: 15_000 });
+  await expect(state).toHaveText('Réponses enregistrées', { timeout: 15_000 });
 }
 
 /** Rapport de contraste WCAG entre le texte d'un élément et le fond effectif derrière lui. */
@@ -62,6 +70,7 @@ export async function companyViaQuickAudit(page: Page, email: string, siren: str
   await page.getByLabel('Commune', { exact: true }).fill('Lyon');
   await page.getByRole('button', { name: 'Confirmer et commencer' }).click();
   await expect(page.getByText('Étape 1 sur 7')).toBeVisible();
+  await questionnaireReady(page);
   const ids = await page.locator('input[id^="hc-"]').evaluateAll((els) => els.map((e) => e.id));
   for (const id of ids) await page.locator('#' + id).fill('3');
   await waitSaved(page);
@@ -69,6 +78,7 @@ export async function companyViaQuickAudit(page: Page, email: string, siren: str
   for (const id of ids) { const y = id.slice(3); await page.getByRole('tab', { name: y }).click(); await page.locator(`#n-${y}-1_1_1_3`).fill('3'); }
   await waitSaved(page);
   await page.goto(page.url().replace(/\?.*$/, '') + '?etape=7');
+  await questionnaireReady(page);
   await page.getByText(/J’accepte que les informations saisies/).click();
   await waitSaved(page);
   await page.getByRole('button', { name: 'Calculer mon estimation' }).click();

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { contrastRatio, expectNoHorizontalScroll, latestLinkFor, loginByMagicLink, waitSaved } from './helpers';
+import { contrastRatio, expectNoHorizontalScroll, latestLinkFor, loginByMagicLink, questionnaireReady, waitSaved } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -45,6 +45,7 @@ test('mode rapide complet sans compte, avec reprise après rechargement', async 
   // Étape 1
   await expect(page.getByRole('heading', { name: 'Votre entreprise' })).toBeVisible();
   await expect(page.getByText('Étape 1 sur 7')).toBeVisible();
+  await questionnaireReady(page);
   questionnaireUrl = page.url();
   const years = await page.locator('input[id^="hc-"]').evaluateAll((els) => els.map((e) => e.id.slice(3)));
   expect(years).toHaveLength(3);
@@ -54,6 +55,7 @@ test('mode rapide complet sans compte, avec reprise après rechargement', async 
 
   // Reprise : les réponses sont retrouvées après rechargement.
   await page.reload();
+  await questionnaireReady(page);
   await expect(page.locator(`#hc-${years[0]}`)).toHaveValue('9');
 
   // Étape 2 : aide sectorielle, répartition, recopie d'une année sur l'autre.
@@ -76,6 +78,7 @@ test('mode rapide complet sans compte, avec reprise après rechargement', async 
   await expect(page.getByRole('heading', { name: 'Votre entreprise' })).toBeVisible();
   await page.goto(`${questionnaireUrl}?etape=3`);
   await expect(page.getByRole('heading', { name: 'Réduction de cotisations déjà appliquée' })).toBeVisible();
+  await questionnaireReady(page);
   await page.locator(`#red-${years[0]}`).fill('4 500');
   await waitSaved(page);
 
@@ -137,6 +140,7 @@ test('démonstration Boulangerie Démo : montants fictifs, indicateurs séparés
   await page.getByRole('button', { name: 'Suivant' }).click();
   await expect(page.getByTestId('euros-lt_1_1')).toContainText('€');
   await page.goto(page.url().replace(/\?.*$/, '') + '?etape=7');
+  await questionnaireReady(page);
   await page.getByRole('button', { name: 'Calculer mon estimation' }).click();
   await expect(page.getByTestId('past-range')).toContainText(/Entre [\d\s\u202f\u00a0]+€ et [\d\s\u202f\u00a0]+€/, { timeout: 20_000 });
   await expect(page.getByTestId('commission')).toContainText('€');

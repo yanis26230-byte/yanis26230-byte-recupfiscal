@@ -20,6 +20,10 @@ export function Questionnaire({ auditId, initial, meta, annualSmic, initialStep,
   const [answers, setAnswers] = React.useState(initial);
   const [index, setIndex] = React.useState(initialStep);
   const [save, setSave] = React.useState<SaveState>('idle');
+  // true tant que des modifications ne sont pas confirmées par le serveur.
+  const [dirty, setDirty] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
+  React.useEffect(() => setReady(true), []);
   const [saveError, setSaveError] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [issues, setIssues] = React.useState<Issue[]>([]);
@@ -42,12 +46,14 @@ export function Questionnaire({ auditId, initial, meta, annualSmic, initialStep,
     }
     setSave('saved');
     setSaveError(null);
+    setDirty(pending.current.size > 0);
     return true;
   }, [auditId]);
 
   const update = <K extends StepId>(id: K, value: StepAnswers[K]) => {
     setAnswers((a) => ({ ...a, [id]: value }));
     pending.current.set(id, value);
+    setDirty(true);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => void flush(), 700);
   };
@@ -76,7 +82,7 @@ export function Questionnaire({ auditId, initial, meta, annualSmic, initialStep,
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10">
+    <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10" data-testid="questionnaire" data-ready={ready ? 'true' : 'false'}>
       {advanced && (
         <Alert tone="info" className="mb-4" data-testid="advanced-info">
           Analyse avancée : {advanced.lines} mois de paie validés seront utilisés pour un calcul salarié par salarié.
@@ -86,7 +92,7 @@ export function Questionnaire({ auditId, initial, meta, annualSmic, initialStep,
       {meta.isDemo && <Alert tone="warn" className="mb-4">Démonstration : entreprise et paramètres <strong>fictifs</strong>. Les réponses sont pré-remplies.</Alert>}
       <div className="flex items-center justify-between text-sm text-muted">
         <span>Étape {index + 1} sur {STEPS.length} · {step.short}</span>
-        <span aria-live="polite" data-testid="save-state">
+        <span aria-live="polite" data-testid="save-state" data-dirty={dirty ? 'true' : 'false'}>
           {save === 'saving' && 'Enregistrement…'}
           {save === 'saved' && 'Réponses enregistrées'}
           {save === 'error' && <span className="text-danger">Non enregistré</span>}

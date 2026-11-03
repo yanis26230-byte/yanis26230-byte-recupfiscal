@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { companyViaQuickAudit, expectNoHorizontalScroll, waitSaved } from './helpers';
+import { companyViaQuickAudit, expectNoHorizontalScroll, questionnaireReady, waitSaved } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -9,6 +9,7 @@ test('rapport PDF généré, conservé et téléchargeable (critère 10)', async
   await page.getByRole('button', { name: 'Parcourir l’exemple' }).click();
   await page.waitForURL(/\/audit\/[0-9a-f-]{36}/);
   await page.goto(page.url().replace(/\?.*$/, '') + '?etape=7');
+  await questionnaireReady(page);
   await page.getByRole('button', { name: 'Calculer mon estimation' }).click();
   await page.getByRole('button', { name: 'Générer le rapport PDF' }).click();
   const link = page.getByTestId('report-link');
@@ -59,6 +60,7 @@ test('mode avancé : DSN déposée, valeurs validées, paie saisie, calcul avanc
   await page.goto(companyUrl);
   await page.getByRole('button', { name: 'Lancer une analyse avancée' }).click();
   await expect(page.getByTestId('advanced-info')).toContainText('3 mois de paie validés');
+  await questionnaireReady(page);
   await page.getByText(/J’accepte que les informations saisies/).click();
   await waitSaved(page);
   await page.getByRole('button', { name: 'Calculer mon estimation' }).click();
