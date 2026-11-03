@@ -13,15 +13,13 @@ Ce guide décrit la mise en service sur une infrastructure européenne. **Aucune
 
 ## 2. Base de données
 
-```bash
-supabase link --project-ref <ref>
-```
+Depuis une copie du dépôt, avec la chaîne de connexion Supabase (pooler, mode session) :
 
 ```bash
-supabase db push
+DATABASE_URL="<chaîne Supabase>" pnpm --filter @recupfiscal/web migrate
 ```
 
-Appliquer ensuite `supabase/seed.sql` (modules, paramètres officiels « à renseigner », cas de référence). **Ne jamais appliquer** `supabase/local/*` (réservé au développement). Le jeu de test (démonstration) n'est chargé que par la base locale.
+L'exécuteur applique dans l'ordre les migrations non encore appliquées (une transaction par fichier, empreinte enregistrée, refus si une migration déjà appliquée a été modifiée), puis `supabase/seed.sql` (modules, paramètres officiels « à renseigner », cas de référence). Il n'applique **jamais** `supabase/local/` (réservé au développement). Le CLI Supabase (`supabase db push`) reste possible, mais ne mélangez pas les deux méthodes sur une même base.
 
 Sauvegardes : activer la restauration à un instant donné (PITR) de Supabase ; tester une restauration sur staging avant l'ouverture.
 

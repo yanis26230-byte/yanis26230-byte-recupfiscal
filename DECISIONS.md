@@ -353,3 +353,6 @@ Chaque décision : contexte, choix, conséquences. Les points marqués **[À VAL
 
 ### D-064 Saisie en lot des paramètres officiels
 - Modèle CSV (`/admin/parametres/modele`) listant toutes les lignes « à renseigner » ; l'expert complète valeur, source (https obligatoire) et date de vérification dans un tableur ; l'import crée des **brouillons** (nouvelle version, auteur = importateur), les lignes invalides ou vides sont refusées une à une avec leur motif. Rien n'est jamais publié par l'import : validation à quatre yeux et publication (avec relance des cas de référence) restent unitaires.
+
+### D-065 Migrations en production
+- Exécuteur intégré (`pnpm --filter @recupfiscal/web migrate`) : migrations appliquées dans l'ordre, une transaction par fichier, empreinte SHA-256 enregistrée dans `app_migrations.applied`, refus de continuer si une migration déjà appliquée a été modifiée, puis chargement idempotent de `seed.sql`. Testé sur PostgreSQL à partir d'une base reproduisant un projet Supabase neuf ; **non encore exécuté sur Supabase**.

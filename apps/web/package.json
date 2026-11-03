@@ -13,7 +13,8 @@
     "db:setup": "tsx scripts/db-setup.ts",
     "worker": "tsx scripts/worker.ts",
     "admin:grant": "tsx scripts/admin-grant.ts",
-    "purge": "tsx scripts/purge.ts"
+    "purge": "tsx scripts/purge.ts",
+    "migrate": "tsx scripts/migrate.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.14",

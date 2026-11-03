@@ -92,7 +92,15 @@ Alternative : déposer le fichier et indiquer son chemin dans `DATABASE_SSL_CA_F
 
 L'application Node.js n'embarque pas ClamAV : il faut un démon `clamd` joignable en **réseau privé** (par exemple le conteneur officiel `clamav/clamav` sur une machine ou un réseau privé de votre hébergeur ; ne jamais exposer le port 3310 sur Internet). Tant qu'il n'est pas configuré, les dépôts de documents sont **refusés** en production (`ANTIVIRUS_REQUIRED` vaut `true` par défaut). Recette : déposer le fichier de test EICAR, qui doit être bloqué.
 
-## 4. Déployer
+## 4. Base de données
+
+Avant le premier déploiement (et après chaque nouvelle migration) :
+
+```bash
+DATABASE_URL="<chaîne Supabase>" pnpm --filter @recupfiscal/web migrate
+```
+
+## 5. Déployer
 
 Clever Cloud déploie par git : poussez la branche `main` vers le dépôt git de l'application (ou reliez le dépôt GitHub dans la console).
 
@@ -100,7 +108,7 @@ Clever Cloud déploie par git : poussez la branche `main` vers le dépôt git de
 clever deploy
 ```
 
-## 5. Vérifier
+## 6. Vérifier
 
 ```bash
 clever logs
@@ -110,7 +118,7 @@ clever logs
 - Les journaux du processus de fond affichent `worker démarré`.
 - Le lendemain, une ligne `purge` doit apparaître vers 03:17 UTC.
 
-## 6. Domaine et dimensionnement
+## 7. Domaine et dimensionnement
 
 ```bash
 clever domain add www.votre-domaine.fr
@@ -118,6 +126,6 @@ clever domain add www.votre-domaine.fr
 
 Configurez ensuite le DNS indiqué par Clever Cloud (certificat HTTPS automatique). Pour plusieurs instances : la purge est idempotente, et la file de traitement utilise des verrous (`skip locked`), donc plusieurs processus de fond peuvent coexister.
 
-## 7. Production
+## 8. Production
 
 Une fois la préproduction recettée (voir la liste de contrôle de `DEPLOIEMENT.md`), créez une seconde application `recupfiscal-prod` avec ses propres projets Supabase et clés, et répétez les étapes 1 à 6.

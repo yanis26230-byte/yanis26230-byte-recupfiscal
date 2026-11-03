@@ -32,7 +32,7 @@ Cinq modules (réduction générale et RGDU, aides à l'embauche, taux AT, zonag
 | Typage TypeScript strict | ✅ |
 | Tests du moteur | 116 |
 | Tests de la base (migrations, règles d'accès par entreprise, règles métier) | 69 |
-| Tests de l’application (services, sécurité, RGPD, PDF, documents, antivirus) | 129 |
+| Tests de l’application (services, sécurité, RGPD, PDF, documents, antivirus, migrations) | 132 |
 | Tests de bout en bout dans un navigateur (smartphone, tablette, ordinateur) | 29 |
 | Intégration continue GitHub Actions | à chaque push sur `main` |
 

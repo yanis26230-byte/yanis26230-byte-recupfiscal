@@ -72,4 +72,4 @@ Arrêtez l'application, supprimez le dossier `apps/web/.data`, relancez `pnpm de
 pnpm test
 ```
 
-Lance les 314 tests (moteur, base de données, application) en quelques minutes.
+Lance les 317 tests (moteur, base de données, application) en quelques minutes.

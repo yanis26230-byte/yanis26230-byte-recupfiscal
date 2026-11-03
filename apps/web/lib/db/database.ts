@@ -10,6 +10,8 @@ export interface Queryable {
   query<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<T[]>;
 }
 export interface Database extends Queryable {
+  /** Exécute un script SQL de plusieurs instructions (migrations), sans paramètre. */
+  exec(sql: string): Promise<void>;
   transaction<T>(fn: (tx: Queryable) => Promise<T>): Promise<T>;
   /**
    * Exécute des requêtes AU NOM d'un utilisateur : rôle `authenticated` et identifiant dans le
@@ -82,6 +84,7 @@ async function createPglite(dataDir: string | null): Promise<Database> {
       await chain;
       return (await db.query(sql, params)).rows as never;
     },
+    exec: async (sql) => { await chain; await db.exec(sql); },
     transaction,
     asUser: withUser(transaction),
     close: () => db.close(),
@@ -129,6 +132,8 @@ async function createPg(url: string): Promise<Database> {
   };
   return {
     query: async (sql, params) => (await pool.query(sql, params as unknown[])).rows,
+    // Protocole simple : plusieurs instructions, une transaction implicite par script.
+    exec: async (sql) => { await pool.query(sql); },
     transaction,
     asUser: withUser(transaction),
     close: () => pool.end(),
