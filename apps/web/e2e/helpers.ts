@@ -14,6 +14,9 @@ export async function questionnaireReady(page: Page) {
 /** Attend que TOUTES les modifications soient confirmées par le serveur (pas seulement un ancien message). */
 export async function waitSaved(page: Page) {
   const state = page.getByTestId('save-state');
+  // Une saisie vient d'avoir lieu : attendre qu'elle soit vue « en attente » (au moins 700 ms
+  // d'anti-rebond), sinon on risquerait de lire l'état précédent avant le rendu de React.
+  await expect(state).toHaveAttribute('data-dirty', 'true', { timeout: 5_000 }).catch(() => undefined);
   await expect(state).toHaveAttribute('data-dirty', 'false', { timeout: 15_000 });
   await expect(state).toHaveText('Réponses enregistrées', { timeout: 15_000 });
 }

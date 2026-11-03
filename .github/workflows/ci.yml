@@ -28,6 +28,12 @@ jobs:
         run: pnpm --filter @recupfiscal/web exec playwright install --with-deps chromium
       - name: Tests de bout en bout (smartphone, tablette, ordinateur)
         run: pnpm test:e2e
+      - name: État des pages au moment des échecs
+        if: failure()
+        run: |
+          for f in $(find apps/web/test-results -name error-context.md); do
+            echo "::group::$f"; cat "$f"; echo "::endgroup::"
+          done
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
