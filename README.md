@@ -3,6 +3,24 @@
 Audit rétroactif des cotisations et aides, optimisation future, paiement au résultat.
 Référence permanente : le cahier des charges du projet. Feuille de route : [PHASES.md](PHASES.md). Décisions : [DECISIONS.md](DECISIONS.md). Déploiement : [docs/DEPLOIEMENT.md](docs/DEPLOIEMENT.md). Recette : [docs/RECETTE.md](docs/RECETTE.md). **Livraison : [docs/LIVRAISON.md](docs/LIVRAISON.md).**
 
+## Lancer l'application
+
+Guide pas à pas (Windows, Mac, Linux) : **[docs/DEMARRAGE.md](docs/DEMARRAGE.md)**. En résumé, avec Node.js 22 installé :
+
+```bash
+corepack enable
+```
+
+```bash
+pnpm install
+```
+
+```bash
+pnpm dev
+```
+
+Puis http://localhost:3000 (démonstration : http://localhost:3000/demo).
+
 ## Structure
 
 ```

@@ -40,7 +40,7 @@ Correspondance avec les 15 critères d'acceptation : [RECETTE.md](RECETTE.md).
 
 ## 3. Démarrer
 
-En local (aucun service externe nécessaire : base PostgreSQL embarquée, e-mails visibles sur `/dev/emails`) :
+En local (aucun service externe nécessaire : base PostgreSQL embarquée, e-mails visibles sur `/dev/emails`) — guide détaillé : [DEMARRAGE.md](DEMARRAGE.md) :
 
 ```bash
 pnpm install
