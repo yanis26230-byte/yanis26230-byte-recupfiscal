@@ -38,7 +38,8 @@ export default async function PayrollPage({ params, searchParams }: { params: Pr
       <nav className="flex flex-wrap gap-2" aria-label="Année">
         {years.map((y) => <Link key={y} href={`?annee=${y}`} className={`min-h-11 rounded-lg border px-4 py-2 text-sm font-semibold ${y === year ? 'border-brand bg-brand text-white' : 'border-line bg-white'}`}>{y}</Link>)}
       </nav>
-      <PayrollEditor companyId={id} year={year} canWrite={canWrite} establishments={view.establishments.map((e) => ({ id: e.id, label: `${e.city ?? '—'}${e.siret ? ` (${e.siret})` : ''}` }))}
+      {/* key : un nouvel éditeur par année, sinon React conserverait les mois de l'année précédente. */}
+      <PayrollEditor key={year} companyId={id} year={year} canWrite={canWrite} establishments={view.establishments.map((e) => ({ id: e.id, label: `${e.city ?? '—'}${e.siret ? ` (${e.siret})` : ''}` }))}
         employees={employees.map((e) => ({ ref: e.internal_id, contract: e.contract_type, months: e.months }))} />
     </div>
   );

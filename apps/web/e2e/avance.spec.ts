@@ -55,6 +55,11 @@ test('mode avancé : DSN déposée, valeurs validées, paie saisie, calcul avanc
   await page.reload();
   await expect(page.getByTestId('payroll-summary')).toContainText('2024 : 1 salarié(s), 1 mois');
   await expectNoHorizontalScroll(page);
+  // Changer d'année ne doit jamais reprendre les mois de l'année précédente.
+  await page.getByRole('link', { name: '2025', exact: true }).click();
+  await expect(page).toHaveURL(/annee=2025/);
+  await expect(page.getByRole('heading', { name: 'Saisie mois par mois – 2025' })).toBeVisible();
+  await expect(page.getByLabel('Brut Janv.')).toHaveValue('');
 
   // Analyse avancée : reprise des réponses rapides, données validées utilisées.
   await page.goto(companyUrl);

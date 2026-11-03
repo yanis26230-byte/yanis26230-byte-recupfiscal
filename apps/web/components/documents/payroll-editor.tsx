@@ -50,7 +50,7 @@ export function PayrollEditor({ companyId, year, canWrite, establishments, emplo
           </Select>
         </Field>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2" key={`mois-${employees.some((e) => e.ref === ref) ? ref : 'nouveau'}`}>
         {months.map((m, i) => (
           <fieldset key={m.month} className="grid grid-cols-2 gap-2 border-t border-line pt-2 sm:grid-cols-5 sm:items-end">
             <legend className="text-sm font-semibold sm:col-span-1">{MONTHS[i]}</legend>

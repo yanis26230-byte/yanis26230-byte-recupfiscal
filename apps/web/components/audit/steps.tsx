@@ -107,7 +107,9 @@ function SalairesStep({ answers, meta, annualSmic, update }: StepProps) {
       {prev !== undefined && (
         <Button variant="secondary" size="sm" onClick={() => setYearData(structuredClone(s.years[String(prev)]!))}>Recopier les réponses {prev}</Button>
       )}
-      <div className="space-y-3">
+      {/* key : chaque année a ses propres champs (sinon React réutilise ceux de l'année précédente,
+          qui affichent brièvement une valeur périmée et peuvent ignorer une saisie identique). */}
+      <div className="space-y-3" key={`brackets-${year}`}>
         {BRACKETS.map((b) => {
           const v = y.brackets[b.id] ?? { count: 0, partTimeSharePct: 0, partTimeRatioPct: null };
           return (
@@ -138,7 +140,7 @@ function SalairesStep({ answers, meta, annualSmic, update }: StepProps) {
       <p className={cn('text-sm', headcount != null && Math.abs(total - headcount) > Math.max(2, 0.2 * headcount) ? 'text-amber-800' : 'text-muted')} data-testid="bracket-total">
         Total réparti : {total} salarié(s){headcount != null ? ` pour un effectif moyen de ${headcount}` : ''}.
       </p>
-      <Card className="grid gap-4 sm:grid-cols-2">
+      <Card className="grid gap-4 sm:grid-cols-2" key={`extras-${year}`}>
         <Field label={`Heures supplémentaires ${year} (approximatif)`} htmlFor={`hs-${year}`} hint="Volume annuel pour toute l’entreprise, facultatif">
           <NumberInput id={`hs-${year}`} min={0} suffix="h" value={y.overtimeHours} onChange={(n) => setYearData({ ...y, overtimeHours: n })} />
         </Field>
