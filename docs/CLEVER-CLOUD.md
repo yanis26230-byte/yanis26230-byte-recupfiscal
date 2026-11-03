@@ -73,6 +73,7 @@ Si `corepack enable` échoue au build, remplacez le hook par `npm install -g pnp
 | `BOOTSTRAP_ADMIN_EMAILS` | votre adresse, à retirer après la première connexion |
 | `DEMO_ENABLED` | `false` |
 | `COMPANY_SEARCH_BASE_URL` | `https://recherche-entreprises.api.gouv.fr` |
+| `ANTIVIRUS_PROVIDER`, `CLAMD_HOST`, `CLAMD_PORT` | démon ClamAV (voir ci-dessous) |
 
 ### Certificat de la base (TLS vérifié)
 
@@ -86,6 +87,10 @@ clever env set DATABASE_SSL_CA "$(awk 'BEGIN{ORS="\\n"} {print}' prod-ca-2021.cr
 ```
 
 Alternative : déposer le fichier et indiquer son chemin dans `DATABASE_SSL_CA_FILE`. Sans certificat fourni, la vérification utilise les autorités système ; si la connexion échoue avec une erreur de certificat, c'est cette variable qui manque.
+
+### Antivirus
+
+L'application Node.js n'embarque pas ClamAV : il faut un démon `clamd` joignable en **réseau privé** (par exemple le conteneur officiel `clamav/clamav` sur une machine ou un réseau privé de votre hébergeur ; ne jamais exposer le port 3310 sur Internet). Tant qu'il n'est pas configuré, les dépôts de documents sont **refusés** en production (`ANTIVIRUS_REQUIRED` vaut `true` par défaut). Recette : déposer le fichier de test EICAR, qui doit être bloqué.
 
 ## 4. Déployer
 

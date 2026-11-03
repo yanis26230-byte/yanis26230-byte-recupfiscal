@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { Forbidden, NotFound } from '../account-service';
+import { noScanner, type Scanner } from '../antivirus';
 import type { Database, Queryable } from '../db/database';
 import type { FileStore } from '../storage';
 import { decodeText, detectFileKind, MAX_UPLOAD_BYTES, MIME, type FileKind } from './detect';
@@ -27,11 +28,17 @@ export interface DocumentRow {
   created_at: string; processing_notes: string[]; pending: number; validated: number; rejected: number;
 }
 
-export async function uploadDocument(db: Database, store: FileStore, userId: string, companyId: string, file: { name: string; bytes: Uint8Array }): Promise<{ documentId: string; duplicate: boolean }> {
+export interface UploadOptions { scanner?: Scanner; antivirusRequired?: boolean }
+
+export async function uploadDocument(db: Database, store: FileStore, userId: string, companyId: string, file: { name: string; bytes: Uint8Array }, opts: UploadOptions = {}): Promise<{ documentId: string; duplicate: boolean }> {
   if (file.bytes.length === 0) throw new UploadRejected('Fichier vide.');
   if (file.bytes.length > MAX_UPLOAD_BYTES) throw new UploadRejected('Fichier trop volumineux (15 Mo maximum).');
   const kind = detectFileKind(file.bytes, file.name);
   if (!kind) throw new UploadRejected('Format non pris en charge. Formats acceptés : PDF, CSV, XLSX, fichier DSN.');
+  // Analyse antivirale avant tout stockage : un fichier infecté n'est jamais conservé.
+  const scan = await (opts.scanner ?? noScanner).scan(file.bytes);
+  if (scan.status === 'infecte') throw new UploadRejected('Ce fichier a été bloqué par l’antivirus. Il n’a pas été enregistré.');
+  if (scan.status === 'non_disponible' && opts.antivirusRequired) throw new UploadRejected('L’analyse antivirale est momentanément indisponible : réessayez dans quelques minutes.');
   const sha = createHash('sha256').update(file.bytes).digest('hex');
   const safeName = file.name.normalize('NFC').replace(/[^\p{L}\p{N}._ -]/gu, '_').slice(0, 120) || 'document';
 
@@ -43,8 +50,8 @@ export async function uploadDocument(db: Database, store: FileStore, userId: str
     const path = `${companyId}/${id}.${kind === 'dsn' ? 'txt' : kind}`;
     await q.query(
       `insert into public.documents (id, company_id, uploaded_by, storage_path, original_filename, mime_type, size_bytes, sha256, status, antivirus_status)
-       values ($1, $2, auth.uid(), $3, $4, $5, $6, $7, 'recu', 'non_disponible')`,
-      [id, companyId, path, safeName, MIME[kind], file.bytes.length, sha]).catch((e: Error) => {
+       values ($1, $2, auth.uid(), $3, $4, $5, $6, $7, 'recu', $8)`,
+      [id, companyId, path, safeName, MIME[kind], file.bytes.length, sha, scan.status]).catch((e: Error) => {
       if (/row-level security/.test(e.message)) throw new Forbidden('Vous n’êtes pas membre de cette entreprise.');
       throw e;
     });

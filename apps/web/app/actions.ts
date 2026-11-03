@@ -249,7 +249,9 @@ export async function uploadDocumentAction(companyId: string, formData: FormData
     const db = await getDb();
     const store = getFileStore();
     try {
-      const r = await uploadDocument(db, store, user.id, companyId, { name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+      const { getScanner, antivirusRequired } = await import('@/lib/antivirus');
+      const r = await uploadDocument(db, store, user.id, companyId, { name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) },
+        { scanner: getScanner(), antivirusRequired: antivirusRequired() });
       // Traitement asynchrone après la réponse (le processus `pnpm worker` prend le relais en production).
       after(() => processPendingJobs(db, store).catch((e) => console.error('extraction', e)));
       revalidatePath(`/espace/entreprises/${companyId}/documents`);

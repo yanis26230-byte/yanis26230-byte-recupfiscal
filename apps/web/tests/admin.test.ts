@@ -134,3 +134,34 @@ describe('Modules, zonages, commercial, utilisateurs internes', () => {
     await expect(setInternalRole(db, admin1.id, 'admin1@plateforme.fr', null)).rejects.toThrow(/au moins un administrateur/);
   });
 });
+
+describe('Saisie en lot des paramètres (CSV)', () => {
+  it('le modèle liste les paramètres à renseigner ; l’import crée des brouillons, jamais des publications', async () => {
+    const { exportParametersToFill, importParameterDrafts } = await import('@/lib/admin-service');
+    await expect(exportParametersToFill(db, analyst.id)).rejects.toThrow();
+    const csv = await exportParametersToFill(db, admin1.id);
+    const lines = csv.replace(/^﻿/, '').trim().split('\r\n');
+    expect(lines[0]).toBe('cle;libelle;valeur;unite;debut;fin;territoire;module;source;verifie_le;note');
+    const smic2024 = lines.find((l) => l.startsWith('smic_horaire;') && l.includes(';2024-01-01;'))!;
+    expect(smic2024).toBeDefined();
+    // L'expert complète deux lignes (dont une au format de date français), en laisse une vide et en saisit une invalide.
+    const cells = smic2024.split(';');
+    cells[2] = '11,65'; cells[8] = 'https://www.legifrance.gouv.fr/exemple-de-test'; cells[9] = '01/11/2026';
+    const filled = [lines[0], cells.join(';'),
+      'pass_annuel;PASS;48 000;EUR;2026-01-01;2026-12-31;FR;M5_EPARGNE_SALARIALE;https://www.urssaf.fr/exemple-de-test;2026-11-01;',
+      'rgdu_puissance;P;;exposant;2026-01-01;2026-12-31;FR;;;;',
+      'seuil;X;abc;-;2026-01-01;;FR;;http://non-securise.fr;2026-11-01;'].join('\n');
+    const r = await importParameterDrafts(db, admin1.id, filled);
+    expect(r.created).toBe(2);
+    expect(r.rejected).toHaveLength(2);
+    expect(r.rejected.join(' ')).toMatch(/valeur vide/);
+    const drafts = await listParameters(db, admin1.id, { status: 'brouillon', key: 'smic_horaire' });
+    expect(drafts.find((p) => p.valid_from === '2024-01-01')).toMatchObject({ value: 11.65, verified_at: '2026-11-01', author_email: 'admin1@plateforme.fr' });
+    expect((await listParameters(db, admin1.id, { status: 'publie', key: 'smic_horaire' }))).toHaveLength(0);
+  });
+  it('colonnes obligatoires vérifiées ; réservé aux administrateurs', async () => {
+    const { importParameterDrafts } = await import('@/lib/admin-service');
+    await expect(importParameterDrafts(db, admin1.id, 'nom;montant\nx;1')).rejects.toThrow(/Colonnes manquantes/);
+    await expect(importParameterDrafts(db, analyst.id, 'cle;valeur\n')).rejects.toThrow(/équipe interne/);
+  });
+});

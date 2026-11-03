@@ -1,6 +1,6 @@
 import { ActionButton, ActionForm, inputCls } from '@/components/admin/action-form';
 import { Badge, Card } from '@/components/ui/card';
-import { createParameterAction, fillParameterAction, parameterStatusAction } from '@/app/admin/actions';
+import { createParameterAction, fillParameterAction, importParametersAction, parameterStatusAction } from '@/app/admin/actions';
 import { listParameters, missingParameters } from '@/lib/admin-service';
 import { adminUser } from '@/lib/server/admin-guard';
 import { getDb } from '@/lib/db';
@@ -21,6 +21,14 @@ export default async function Parametres({ searchParams }: { searchParams: Promi
         {missing.length === 0 ? <p className="text-sm text-muted">Aucune.</p> : (
           <ul className="max-h-64 overflow-y-auto text-sm" data-testid="missing">{missing.map((m) => <li key={`${m.key}${m.period_from}`}><a className="text-brand underline" href={`?cle=${m.key}`}>{m.key}</a> · {m.period_from} → {m.period_to} · {m.reason} · {m.runs} calcul(s)</li>)}</ul>
         )}
+      </Card>
+      <Card className="space-y-2">
+        <h2 className="font-semibold">Saisie en lot</h2>
+        <p className="text-sm text-muted">Téléchargez le <a className="text-brand underline" href="/admin/parametres/modele" data-testid="param-template">modèle des paramètres à renseigner</a> (CSV, séparateur « ; »), complétez les colonnes <em>valeur</em>, <em>source</em> (URL officielle en https) et <em>verifie_le</em>, puis importez-le. Chaque ligne devient un brouillon : la validation par un second administrateur reste obligatoire.</p>
+        <ActionForm action={importParametersAction} className="flex flex-wrap items-center gap-2 text-sm">
+          <input name="fichier" type="file" accept=".csv,text/csv" required className={`${inputCls} w-auto`} aria-label="Fichier CSV des paramètres" />
+          <button className="rounded-lg bg-brand px-3 py-1.5 font-semibold text-white">Importer en brouillons</button>
+        </ActionForm>
       </Card>
       <form className="flex flex-wrap gap-2 text-sm">
         <select name="statut" defaultValue={sp.statut ?? ''} className={`${inputCls} w-auto`} aria-label="Statut">

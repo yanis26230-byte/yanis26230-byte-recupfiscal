@@ -375,3 +375,59 @@ export async function auditLog(db: Database, userId: string, limit = 100) {
     select l.id, l.created_at::text, u.email as actor_email, l.action, l.table_name, l.row_id from public.audit_logs l left join public.users u on u.id = l.actor_id
      order by l.id desc limit $1`, [limit]));
 }
+
+// ---------------------------------------------------------------------------
+// Import / export CSV des paramètres (saisie en lot par un expert)
+// ---------------------------------------------------------------------------
+
+export const PARAM_CSV_COLUMNS = ['cle', 'libelle', 'valeur', 'unite', 'debut', 'fin', 'territoire', 'module', 'source', 'verifie_le', 'note'] as const;
+
+const csvCell = (v: unknown) => {
+  const s = v === null || v === undefined ? '' : String(v);
+  return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+/**
+ * Modèle CSV des paramètres à renseigner (séparateur « ; », compatible tableur français).
+ * Colonnes valeur, source et verifie_le à compléter ; une ligne = une période.
+ */
+export async function exportParametersToFill(db: Database, userId: string): Promise<string> {
+  const rows = await listParameters(db, userId, { status: 'a_renseigner' });
+  const lines = rows.map((p) => [p.key, p.label, '', p.unit, p.valid_from, p.valid_to ?? '', p.territory, p.module_id ?? '', '', '', ''].map(csvCell).join(';'));
+  return '\uFEFF' + [PARAM_CSV_COLUMNS.join(';'), ...lines].join('\r\n') + '\r\n';
+}
+
+/**
+ * Import : chaque ligne valide devient une NOUVELLE VERSION BROUILLON (rien n'est publié) ; la
+ * validation par un second administrateur reste obligatoire, ligne par ligne.
+ */
+export async function importParameterDrafts(db: Database, userId: string, csv: string): Promise<{ created: number; rejected: string[] }> {
+  await requireInternal(db, userId, 'administrateur');
+  const { splitCsv } = await import('./documents/payroll-template');
+  const rows = splitCsv(csv.replace(/^\uFEFF/, ''));
+  const header = (rows.shift() ?? []).map((h) => h.trim().toLowerCase());
+  const missing = ['cle', 'valeur', 'unite', 'debut', 'source', 'verifie_le'].filter((c) => !header.includes(c));
+  if (missing.length) throw new Forbidden(`Colonnes manquantes : ${missing.join(', ')}. Utilisez le modèle exporté.`);
+  const col = (r: string[], c: string) => (r[header.indexOf(c)] ?? '').trim();
+  const frDate = (v: string) => (/^\d{2}\/\d{2}\/\d{4}$/.test(v) ? `${v.slice(6)}-${v.slice(3, 5)}-${v.slice(0, 2)}` : v);
+  let created = 0;
+  const rejected: string[] = [];
+  for (const [i, r] of rows.entries()) {
+    if (r.every((c) => c.trim() === '')) continue;
+    const line = i + 2;
+    const rawValue = col(r, 'valeur').replace(/[\s\u00a0\u202f]/g, '').replace(',', '.');
+    if (rawValue === '') { rejected.push(`Ligne ${line} (${col(r, 'cle')}) : valeur vide, ignorée`); continue; }
+    try {
+      await createParameterDraft(db, userId, {
+        key: col(r, 'cle'), label: col(r, 'libelle') || col(r, 'cle'), value: Number(rawValue), unit: col(r, 'unite') || '-',
+        validFrom: frDate(col(r, 'debut')), validTo: col(r, 'fin') ? frDate(col(r, 'fin')) : null, territory: col(r, 'territoire') || 'FR',
+        moduleId: col(r, 'module') || null, sourceUrl: col(r, 'source'), verifiedAt: frDate(col(r, 'verifie_le')), note: col(r, 'note') || null,
+      });
+      created++;
+    } catch (e) {
+      const msg = e instanceof z.ZodError ? e.issues.map((x) => `${x.path.join('.')} : ${x.message}`).join(', ') : (e as Error).message;
+      rejected.push(`Ligne ${line} (${col(r, 'cle')}) : ${msg}`);
+    }
+  }
+  return { created, rejected };
+}

@@ -46,6 +46,7 @@ Sauvegardes : activer la restauration à un instant donné (PITR) de Supabase ; 
 | `BOOTSTRAP_ADMIN_EMAILS` | adresse(s) du premier administrateur, à retirer ensuite |
 | `IP_HASH_SALT` | valeur aléatoire secrète (hachage des IP pour la limitation de débit) |
 | `RETENTION_*` | durées de conservation validées par le DPO |
+| `ANTIVIRUS_PROVIDER=clamav`, `CLAMD_HOST`, `CLAMD_PORT` | démon ClamAV joignable en réseau privé ; analyse obligatoire en production (`ANTIVIRUS_REQUIRED`, défaut `true`) : sans lui, les dépôts sont refusés |
 | `DATABASE_SSL_CA` / `DATABASE_SSL_CA_FILE` | certificat racine de la base (Supabase), connexion TLS toujours vérifiée |
 
 Guide pas à pas pour Clever Cloud : [CLEVER-CLOUD.md](CLEVER-CLOUD.md).
@@ -65,10 +66,10 @@ Guide pas à pas pour Clever Cloud : [CLEVER-CLOUD.md](CLEVER-CLOUD.md).
 
 ## 7. Avant toute ouverture commerciale (§19)
 
-- [ ] Paramètres officiels saisis, sourcés, validés à quatre yeux et publiés (aucun n'est livré).
+- [ ] Paramètres officiels saisis, sourcés, validés à quatre yeux et publiés (aucun n'est livré) : modèle CSV téléchargeable dans `/admin/parametres`, import en brouillons.
 - [ ] Formules, hypothèses et correspondances DSN validées par un expert paie (voir `DECISIONS.md`, points « À VALIDER »).
 - [ ] Conditions du mandat, politique de confidentialité, mentions légales, textes d'e-mails rédigés et validés par des professionnels du droit, puis publiés depuis le back-office.
 - [ ] Modèle de rémunération et périmètre d'intervention validés juridiquement.
 - [ ] Recette sur staging de Supabase Auth, Storage, Brevo, Yousign et de l'API Recherche d'entreprises.
-- [ ] Antivirus sur les fichiers déposés ; OCR et fournisseur d'IA uniquement avec garanties contractuelles et hébergement conforme.
+- [ ] Démon ClamAV déployé (réseau privé) et `ANTIVIRUS_PROVIDER=clamav` configuré ; recette avec le fichier de test EICAR. OCR et fournisseur d'IA uniquement avec garanties contractuelles et hébergement conforme.
 - [ ] Tests de restauration de sauvegarde ; registre des traitements ; analyse d'impact si nécessaire.

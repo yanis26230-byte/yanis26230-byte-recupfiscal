@@ -141,3 +141,14 @@ export async function commissionStatusAction(caseId: string, commissionId: strin
   const { cs } = await caseDeps();
   return run(`/admin/dossiers/${caseId}`, (db, u) => cs.setCommissionStatus(db, u, commissionId, status), 'Commission mise à jour.');
 }
+
+export async function importParametersAction(fd: FormData) {
+  const file = fd.get('fichier');
+  if (!(file instanceof File) || file.size === 0) return { ok: false as const, message: 'Choisissez un fichier CSV.' };
+  if (file.size > 2 * 1024 * 1024) return { ok: false as const, message: 'Fichier trop volumineux (2 Mo maximum).' };
+  const text = new TextDecoder('utf-8').decode(await file.arrayBuffer());
+  return run('/admin/parametres', async (db, u) => {
+    const r = await admin.importParameterDrafts(db, u, text);
+    return `${r.created} brouillon(s) créé(s), à faire valider par un second administrateur.${r.rejected.length ? ` ${r.rejected.length} ligne(s) refusée(s) : ${r.rejected.slice(0, 5).join(' ; ')}${r.rejected.length > 5 ? '…' : ''}` : ''}`;
+  });
+}

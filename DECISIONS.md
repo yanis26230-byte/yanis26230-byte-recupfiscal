@@ -341,3 +341,15 @@ Chaque décision : contexte, choix, conséquences. Les points marqués **[À VAL
 - Point de santé `/api/sante` (base, file de traitement) ; journaux JSON structurés (`lib/log.ts`), sans donnée personnelle.
 - Intégration continue GitHub Actions (`.github/workflows/ci.yml`) : seed à jour, typage, tests (moteur, base avec RLS, application), tests de bout en bout.
 - Déploiement, sauvegardes et liste de contrôle avant ouverture : `docs/DEPLOIEMENT.md`. Recette des 15 critères : `docs/RECETTE.md`.
+
+---
+
+## Finalisation
+
+### D-063 Antivirus
+- Analyse de chaque fichier déposé **avant stockage** par ClamAV (`clamd`, protocole `INSTREAM` en TCP). Fichier infecté : refusé et jamais enregistré. Statut conservé (`sain` ou `non_disponible`, contrainte en base).
+- **Obligatoire par défaut en production** (`ANTIVIRUS_REQUIRED`) : sans antivirus joignable, le dépôt est refusé plutôt qu'accepté sans contrôle. En développement, statut `non_disponible`.
+- Testé contre un serveur reproduisant le protocole clamd et le fichier EICAR ; **non testé contre un vrai ClamAV** (non installé dans l'environnement de développement).
+
+### D-064 Saisie en lot des paramètres officiels
+- Modèle CSV (`/admin/parametres/modele`) listant toutes les lignes « à renseigner » ; l'expert complète valeur, source (https obligatoire) et date de vérification dans un tableur ; l'import crée des **brouillons** (nouvelle version, auteur = importateur), les lignes invalides ou vides sont refusées une à une avec leur motif. Rien n'est jamais publié par l'import : validation à quatre yeux et publication (avec relance des cas de référence) restent unitaires.

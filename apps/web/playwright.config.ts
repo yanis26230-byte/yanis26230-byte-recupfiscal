@@ -31,6 +31,8 @@ export default defineConfig({
       PGLITE_DATA_DIR: '.data/e2e', DEMO_ENABLED: 'true', COMPANY_SEARCH_BASE_URL: 'http://127.0.0.1:9', PARAMETER_DATASET: 'officiel',
       AUTH_PROVIDER: 'local', ALLOW_LOCAL_AUTH: 'true', MAIL_PROVIDER: 'outbox', ALLOW_DEV_OUTBOX: 'true', APP_URL: `http://127.0.0.1:${PORT}`,
       STORAGE_PROVIDER: 'local', LOCAL_STORAGE_DIR: '.data/e2e-files', BOOTSTRAP_ADMIN_EMAILS: 'admin@plateforme.test',
+      // Pas de démon ClamAV dans l'environnement de test : exigence levée explicitement (testée à part).
+      ANTIVIRUS_REQUIRED: 'false',
     },
   },
 });

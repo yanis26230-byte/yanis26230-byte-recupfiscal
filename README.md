@@ -1,7 +1,7 @@
 # Plateforme de récupération fiscale et sociale pour PME
 
 Audit rétroactif des cotisations et aides, optimisation future, paiement au résultat.
-Référence permanente : le cahier des charges du projet. Feuille de route : [PHASES.md](PHASES.md). Décisions : [DECISIONS.md](DECISIONS.md). Déploiement : [docs/DEPLOIEMENT.md](docs/DEPLOIEMENT.md). Recette : [docs/RECETTE.md](docs/RECETTE.md).
+Référence permanente : le cahier des charges du projet. Feuille de route : [PHASES.md](PHASES.md). Décisions : [DECISIONS.md](DECISIONS.md). Déploiement : [docs/DEPLOIEMENT.md](docs/DEPLOIEMENT.md). Recette : [docs/RECETTE.md](docs/RECETTE.md). **Livraison : [docs/LIVRAISON.md](docs/LIVRAISON.md).**
 
 ## Structure
 
